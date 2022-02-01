@@ -1,0 +1,43 @@
+{
+  "name": "hw1-solution",
+  "version": "1.0.0",
+  "description": "Solution for HW1, CS4530 Spring 2022",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest --coverage",
+    "format": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "start": "tsc && node ./dist/index.js",
+    "pack": "npm-pack-zip"
+  },
+  "author": "Mitch",
+  "license": "ISC",
+  "dependencies": {
+    "nanoid": "^3.1.30",
+    "typescript": "^3.9.6"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.9.0",
+    "@typescript-eslint/parser": "^5.9.0",
+    "eslint": "^7.18.0",
+    "eslint-config-airbnb-typescript": "^12.0.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-import": "^2.22.4",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-react": "^7.22.0",
+    "jest": "^27.4.5",
+    "lint-staged": "^12.1.6",
+    "npm-pack-zip": "^1.2.9",
+    "prettier": "^2.5.1",
+    "prettier-plugin-organize-imports": "^2.3.4",
+    "ts-jest": "^27.1.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  }
+}
