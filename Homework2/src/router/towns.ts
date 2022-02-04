@@ -13,7 +13,6 @@ import {
   townUpdateHandler,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
-import { ConversationAreaCreateRequest } from '../client/TownsServiceClient';
 
 export default function addTownRoutes(http: Server, app: Express): io.Server {
   /*
@@ -105,7 +104,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   /**
    * Request a coversation area
    */
-  app.post('/towns/:townID/conversationAreas', express.json, async (req : ConversationAreaCreateRequest, res : Record<>>) => {
+  app.post('/towns/:townID/conversationAreas', express.json, async (req, res) => {
     try {
       const result = await conversationAreaCreateHandler({
         coveyTownID: req.coveyTownID,
