@@ -2,7 +2,6 @@ import express, { Express } from 'express';
 import io from 'socket.io';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
-import { runInNewContext } from 'vm';
 import {
   conversationAreaCreateHandler,
   townCreateHandler,
@@ -104,12 +103,12 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   /**
    * Request a coversation area
    */
-  app.post('/towns/:townID/conversationAreas', express.json, async (req, res) => {
+  app.post('/towns/:townID/conversationAreas', express.json(), async (req, res) => {
     try {
       const result = await conversationAreaCreateHandler({
-        coveyTownID: req.coveyTownID,
-        sessionToken: req.sessionToken,
-        conversationArea: req.conversationArea,
+        coveyTownID: req.params.townID,
+        sessionToken: req.body.sessionToken,
+        conversationArea: req.body.conversationArea,
       });
       res.status(StatusCodes.OK).json(result);
     } catch (err) {

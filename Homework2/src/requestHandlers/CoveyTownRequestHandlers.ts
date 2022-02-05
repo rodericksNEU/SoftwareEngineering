@@ -8,7 +8,6 @@ import {
   ConversationAreaCreateRequest,
   ServerConversationArea,
 } from '../client/TownsServiceClient';
-import CoveyTownController from '../lib/CoveyTownController';
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -39,6 +38,8 @@ export interface TownJoinResponse {
   friendlyName: string;
   /** Is this a private town? * */
   isPubliclyListed: boolean;
+  /** Conversation areas in this town */
+  conversationArea: ServerConversationArea[];
 }
 
 /**
@@ -125,6 +126,7 @@ export async function townJoinHandler(
       currentPlayers: coveyTownController.players,
       friendlyName: coveyTownController.friendlyName,
       isPubliclyListed: coveyTownController.isPubliclyListed,
+      conversationArea: coveyTownController.conversationAreas,
     },
   };
 }
@@ -204,10 +206,10 @@ export function conversationAreaCreateHandler(
   const townsStore = CoveyTownsStore.getInstance();
   const conversationAreaLabel = _requestData.conversationArea.label;
   const conversationAreaTopic = _requestData.conversationArea.topic;
-  const token = _requestData.sessionToken;
+  const townID = _requestData.coveyTownID;
   const coveyTownController = townsStore.getControllerForTown(_requestData.coveyTownID);
 
-  if (token === coveyTownController?.coveyTownID) {
+  if (townID === coveyTownController?.coveyTownID) {
     return {
       isOK: true,
       response: {},

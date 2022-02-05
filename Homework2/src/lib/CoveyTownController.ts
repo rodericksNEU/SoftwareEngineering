@@ -1,4 +1,6 @@
 import { customAlphabet, nanoid } from 'nanoid';
+import { listeners } from 'process';
+import { TrustProductsEvaluationsContext } from 'twilio/lib/rest/trusthub/v1/trustProducts/trustProductsEvaluations';
 import { ServerConversationArea } from '../client/TownsServiceClient';
 import { UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
@@ -124,11 +126,11 @@ export default class CoveyTownController {
 
   /**
    * Updates the location of a player within the town
-   * 
+   *
    * If the player has changed conversation areas, this method also updates the
    * corresponding ConversationArea objects tracked by the town controller, and dispatches
    * any onConversationUpdated events as appropriate
-   * 
+   *
    * @param player Player to update location for
    * @param location New location for this player
    */
@@ -151,7 +153,61 @@ export default class CoveyTownController {
    * @returns true if the conversation is successfully created, or false if not
    */
   addConversationArea(_conversationArea: ServerConversationArea): boolean {
-    return this._capacity > 0 && _conversationArea.label !== ''; // TODO delete this when you implement HW2, it is here just to satisfy the linter
+    console.log(_conversationArea);
+    if (
+      _conversationArea.topic === '' ||
+      _conversationArea.topic === undefined ||
+      _conversationArea.label === '' ||
+      _conversationArea.label === undefined
+    ) {
+      return false;
+    }
+
+    let i = this._conversationAreas.length;
+
+    const bb = _conversationArea.boundingBox;
+    // left most point of new bounding box
+    const left = bb.x - bb.width / 2;
+    // right most point of new bounding box
+    const right = bb.x + bb.width / 2;
+    // top of bounding box
+    const top = bb.y - bb.height / 2;
+    // bottom of bounding box
+    const bottom = bb.y + bb.height / 2;
+
+    // Checks if there is an existing conversation area in bounds of new conversation area
+    while (i > 0) {
+      const convo = this._conversationAreas[i];
+      if (convo.label === _conversationArea.label) {
+        return false;
+      }
+      const cbb = convo.boundingBox;
+      if (cbb.x - cbb.width / 2 > left && cbb.x + cbb.width / 2 < right) {
+        if (cbb.y - cbb.height / 2 > top && cbb.y + cbb.height / 2 < bottom) {
+          return false;
+        }
+      }
+      i -= 1;
+    }
+    this._conversationAreas.push(_conversationArea);
+    console.log(this._conversationAreas.length);
+
+    // Adds all players in new conversation area to occupancy list
+    const j = this._players.length;
+    while (j > 0) {
+      const player = this._players[j];
+      const px = player.location.x;
+      const py = player.location.y;
+      if (px > left && px < right && py > top && py < bottom) {
+        player.activeConversationArea = _conversationArea;
+        _conversationArea.occupantsByID.push(player.id);
+      }
+    }
+
+    this._listeners.forEach(l => {
+      l.onConversationAreaUpdated(_conversationArea);
+    });
+    return true;
   }
 
   /**
@@ -187,5 +243,4 @@ export default class CoveyTownController {
   disconnectAllPlayers(): void {
     this._listeners.forEach(listener => listener.onTownDestroyed());
   }
-
 }
