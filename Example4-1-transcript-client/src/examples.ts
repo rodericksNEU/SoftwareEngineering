@@ -16,19 +16,23 @@ type ImportTranscript = {
     3. After posting the grades, it should fetch the transcripts for each student and return an array of transcripts. 
 */
 export async function importGrades(gradesToImport: ImportTranscript[]): Promise<Transcript[]> {
-  const ret: Transcript[] = [];
+  const exportTranscripts: Transcript[] = [];
   while (gradesToImport.length > 0) {
+    console.log('Creating a student');
     const transcript : ImportTranscript = gradesToImport.pop();
     const { studentID } = await client.addStudent(transcript.studentName);
-    console.log(transcript.grades.entries)
+    console.log(transcript.grades.forEach(cg => {
+      client.addGrade(studentID, cg.course, cg.grade);
+    }));
+    exportTranscripts.push(await client.getTranscript(studentID));
   }
 
   //Here is some example code that makes the API calls that you will need (addStudent, addGrade, and getTranscript)
-  console.log('Creating a student');
-  const { studentID } = await client.addStudent('test student');
-  await client.addGrade(studentID, 'demo course', 100);
-  ret.push(await client.getTranscript(studentID));
-  return ret;
+  // console.log('Creating a student');
+  // const { studentID } = await client.addStudent('test student');
+  // await client.addGrade(studentID, 'demo course', 100);
+  // ret.push(await client.getTranscript(studentID));
+  // return ret;
 }
 
 importGrades([
