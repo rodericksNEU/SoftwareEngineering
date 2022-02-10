@@ -153,7 +153,7 @@ export default class CoveyTownController {
    * @returns true if the conversation is successfully created, or false if not
    */
   addConversationArea(_conversationArea: ServerConversationArea): boolean {
-    console.log(_conversationArea);
+    console.log(_conversationArea.label);
     if (
       _conversationArea.topic === '' ||
       _conversationArea.topic === undefined ||
