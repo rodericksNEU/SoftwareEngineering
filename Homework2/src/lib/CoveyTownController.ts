@@ -1,7 +1,4 @@
-/* eslint-disable no-console */
 import { customAlphabet, nanoid } from 'nanoid';
-import { listeners } from 'process';
-import { TrustProductsEvaluationsContext } from 'twilio/lib/rest/trusthub/v1/trustProducts/trustProductsEvaluations';
 import { ServerConversationArea } from '../client/TownsServiceClient';
 import { UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
@@ -179,20 +176,24 @@ export default class CoveyTownController {
     while (i > 0) {
       const convo = this._conversationAreas[i - 1];
       if (convo.label === _conversationArea.label) {
-        console.log(`duplicate conversation area label ${convo.label}`);
         return false;
       }
       const cbb = convo.boundingBox;
-      if (cbb.x - cbb.width / 2 > left && cbb.x + cbb.width / 2 < right) {
-        if (cbb.y - cbb.height / 2 > top && cbb.y + cbb.height / 2 < bottom) {
-          console.log('overlapping boxes');
+      const newLeft = cbb.x - bb.width / 2;
+      const newRight = cbb.x + bb.width / 2;
+      const newTop = cbb.y - bb.height / 2;
+      const newBottom = cbb.y + bb.height / 2;
+
+      if (newLeft > left && newLeft < right ||  newRight < right && newLeft > left) {
+        if (newTop < top && newBottom > top || newBottom < bottom && newBottom > top)  {
+          // console.log('overlapping boxes');
           return false;
         }
       }
       i -= 1;
     }
     this.conversationAreas.push(_conversationArea);
-    console.log(`length of conversation area array is ${this._conversationAreas.length}`);
+    // console.log(`length of conversation area array is ${this._conversationAreas.length}`);
 
 
     // Adds all players in new conversation area to occupancy list

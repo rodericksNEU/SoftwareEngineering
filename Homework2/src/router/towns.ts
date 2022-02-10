@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import express, { Express } from 'express';
 import io from 'socket.io';
 import { Server } from 'http';

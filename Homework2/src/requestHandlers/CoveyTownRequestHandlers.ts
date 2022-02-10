@@ -1,4 +1,4 @@
-import assert, { ok } from 'assert';
+import assert from 'assert';
 import { Socket } from 'socket.io';
 import Player from '../types/Player';
 import { CoveyTownList, UserLocation } from '../CoveyTypes';
@@ -39,7 +39,7 @@ export interface TownJoinResponse {
   /** Is this a private town? * */
   isPubliclyListed: boolean;
   /** Conversation areas in this town */
-  conversationArea: ServerConversationArea[];
+  conversationAreas: ServerConversationArea[];
 }
 
 /**
@@ -126,7 +126,7 @@ export async function townJoinHandler(
       currentPlayers: coveyTownController.players,
       friendlyName: coveyTownController.friendlyName,
       isPubliclyListed: coveyTownController.isPubliclyListed,
-      conversationArea: coveyTownController.conversationAreas,
+      conversationAreas: coveyTownController.conversationAreas,
     },
   };
 }
@@ -139,9 +139,7 @@ export function townListHandler(): ResponseEnvelope<TownListResponse> {
   };
 }
 
-export function townCreateHandler(
-  requestData: TownCreateRequest,
-): ResponseEnvelope<TownCreateResponse> {
+export function townCreateHandler(requestData: TownCreateRequest): ResponseEnvelope<TownCreateResponse> {
   const townsStore = CoveyTownsStore.getInstance();
   if (requestData.friendlyName.length === 0) {
     return {
@@ -200,28 +198,51 @@ export function townUpdateHandler(
  * * Ask the TownController to create the conversation area
  * @param _requestData Conversation area create request
  */
-export function conversationAreaCreateHandler(
-  _requestData: ConversationAreaCreateRequest,
-): ResponseEnvelope<Record<string, null>> {
+export function conversationAreaCreateHandler(_requestData: ConversationAreaCreateRequest) : ResponseEnvelope<Record<string, null>> {
+
   const townsStore = CoveyTownsStore.getInstance();
   const conversationAreaLabel = _requestData.conversationArea.label;
   const conversationAreaTopic = _requestData.conversationArea.topic;
-  const townID = _requestData.coveyTownID;
   const coveyTownController = townsStore.getControllerForTown(_requestData.coveyTownID);
-  const { conversationArea } = _requestData;
-  if (townID === coveyTownController?.coveyTownID) {
-    coveyTownController.addConversationArea(conversationArea);
-    console.log(`length of coversation areas list ${coveyTownController.conversationAreas.length}`);
+
+
+  console.log(`controller defined? ${coveyTownController !== undefined}`);
+  // Validate controller
+  if (coveyTownController === undefined) {
     return {
-      isOK: true,
+      isOK: false,
       response: {},
-      message: undefined,
+      message: `Unable to create conversation area ${conversationAreaLabel} with topic ${conversationAreaTopic}`,
     };
   }
+
+  // Validate session token 
+  const token = coveyTownController.getSessionByToken(_requestData.sessionToken);
+  console.log(`token valid? ${token !== undefined}`);
+  if (token === undefined) {
+    return {
+      isOK: false,
+      response: {},
+      message: `Unable to create conversation area ${conversationAreaLabel} with topic ${conversationAreaTopic}`,
+    };
+  }
+
+  // Validate conversation area
+  const conversationArea = coveyTownController.addConversationArea(_requestData.conversationArea);
+  console.log(`conversation area defined? ${conversationArea !== undefined}`);
+  if (conversationArea === undefined) {
+    return {
+      isOK: false,
+      response: {},
+      message: `Unable to create conversation area ${conversationAreaLabel} with topic ${conversationAreaTopic}`,
+    };
+  }
+
   return {
-    isOK: false,
+    isOK: true,
     response: {},
-    message: `Unable to create conversation area ${conversationAreaLabel} with topic ${conversationAreaTopic}`,
+    message: undefined,
+
   };
 }
 
