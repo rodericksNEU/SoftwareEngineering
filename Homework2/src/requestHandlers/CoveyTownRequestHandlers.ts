@@ -208,8 +208,10 @@ export function conversationAreaCreateHandler(
   const conversationAreaTopic = _requestData.conversationArea.topic;
   const townID = _requestData.coveyTownID;
   const coveyTownController = townsStore.getControllerForTown(_requestData.coveyTownID);
-
+  const { conversationArea } = _requestData;
   if (townID === coveyTownController?.coveyTownID) {
+    coveyTownController.addConversationArea(conversationArea);
+    console.log(`length of coversation areas list ${coveyTownController.conversationAreas.length}`);
     return {
       isOK: true,
       response: {},

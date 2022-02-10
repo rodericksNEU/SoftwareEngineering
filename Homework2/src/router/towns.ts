@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import express, { Express } from 'express';
 import io from 'socket.io';
 import { Server } from 'http';
@@ -110,6 +111,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         sessionToken: req.body.sessionToken,
         conversationArea: req.body.conversationArea,
       });
+      
       res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);

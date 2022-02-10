@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { customAlphabet, nanoid } from 'nanoid';
 import { listeners } from 'process';
 import { TrustProductsEvaluationsContext } from 'twilio/lib/rest/trusthub/v1/trustProducts/trustProductsEvaluations';
@@ -153,7 +154,7 @@ export default class CoveyTownController {
    * @returns true if the conversation is successfully created, or false if not
    */
   addConversationArea(_conversationArea: ServerConversationArea): boolean {
-    console.log(_conversationArea.label);
+
     if (
       _conversationArea.topic === '' ||
       _conversationArea.topic === undefined ||
@@ -162,8 +163,6 @@ export default class CoveyTownController {
     ) {
       return false;
     }
-
-    let i = this._conversationAreas.length;
 
     const bb = _conversationArea.boundingBox;
     // left most point of new bounding box
@@ -175,33 +174,38 @@ export default class CoveyTownController {
     // bottom of bounding box
     const bottom = bb.y + bb.height / 2;
 
+    let i = this._conversationAreas.length;
     // Checks if there is an existing conversation area in bounds of new conversation area
     while (i > 0) {
-      const convo = this._conversationAreas[i];
+      const convo = this._conversationAreas[i - 1];
       if (convo.label === _conversationArea.label) {
+        console.log(`duplicate conversation area label ${convo.label}`);
         return false;
       }
       const cbb = convo.boundingBox;
       if (cbb.x - cbb.width / 2 > left && cbb.x + cbb.width / 2 < right) {
         if (cbb.y - cbb.height / 2 > top && cbb.y + cbb.height / 2 < bottom) {
+          console.log('overlapping boxes');
           return false;
         }
       }
       i -= 1;
     }
-    this._conversationAreas.push(_conversationArea);
-    console.log(this._conversationAreas.length);
+    this.conversationAreas.push(_conversationArea);
+    console.log(`length of conversation area array is ${this._conversationAreas.length}`);
+
 
     // Adds all players in new conversation area to occupancy list
-    const j = this._players.length;
+    let j = this._players.length;
     while (j > 0) {
-      const player = this._players[j];
+      const player = this._players[j - 1];
       const px = player.location.x;
       const py = player.location.y;
       if (px > left && px < right && py > top && py < bottom) {
         player.activeConversationArea = _conversationArea;
         _conversationArea.occupantsByID.push(player.id);
       }
+      j -= 1;
     }
 
     this._listeners.forEach(l => {
