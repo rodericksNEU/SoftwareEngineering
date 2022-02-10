@@ -163,30 +163,50 @@ export default class CoveyTownController {
 
     const bb = _conversationArea.boundingBox;
     // left most point of new bounding box
-    const left = bb.x - bb.width / 2;
+    const newLeft = bb.x - bb.width / 2;
     // right most point of new bounding box
-    const right = bb.x + bb.width / 2;
+    const newRight = bb.x + bb.width / 2;
     // top of bounding box
-    const top = bb.y - bb.height / 2;
+    const newTop = bb.y - bb.height / 2;
     // bottom of bounding box
-    const bottom = bb.y + bb.height / 2;
+    const newBottom = bb.y + bb.height / 2;
 
     let i = this._conversationAreas.length;
     // Checks if there is an existing conversation area in bounds of new conversation area
     while (i > 0) {
       const convo = this._conversationAreas[i - 1];
+      // If label already exists for some conversation area in array
       if (convo.label === _conversationArea.label) {
         return false;
       }
       const cbb = convo.boundingBox;
-      const newLeft = cbb.x - bb.width / 2;
-      const newRight = cbb.x + bb.width / 2;
-      const newTop = cbb.y - bb.height / 2;
-      const newBottom = cbb.y + bb.height / 2;
+      const left = cbb.x - bb.width / 2;
+      const right = cbb.x + bb.width / 2;
+      const top = cbb.y - bb.height / 2;
+      const bottom = cbb.y + bb.height / 2;
 
-      if (newLeft > left && newLeft < right ||  newRight < right && newLeft > left) {
-        if (newTop < top && newBottom > top || newBottom < bottom && newBottom > top)  {
-          // console.log('overlapping boxes');
+      // Top Left Corner
+      if (newLeft < left && newRight > left) {
+        if (newTop < top && newBottom > top) {
+          return false;
+        }
+      }
+      // Top Right Corner
+      if (newLeft > left && newLeft < right) {
+        if (newTop < top && newBottom > top)  {
+          return false;
+        }
+      }
+      // Bottom Left Corner
+      if (newLeft < left && newRight > left) {
+        if (newTop < bottom && newBottom > bottom)  {
+          return false;
+        }
+      }
+
+      // Bottom Right Corner
+      if (newLeft > left && newLeft < right) {
+        if (newTop < bottom && newBottom > bottom)  {
           return false;
         }
       }
@@ -202,7 +222,7 @@ export default class CoveyTownController {
       const player = this._players[j - 1];
       const px = player.location.x;
       const py = player.location.y;
-      if (px > left && px < right && py > top && py < bottom) {
+      if (px > newLeft && px < newRight && py > newTop && py < newBottom) {
         player.activeConversationArea = _conversationArea;
         _conversationArea.occupantsByID.push(player.id);
       }

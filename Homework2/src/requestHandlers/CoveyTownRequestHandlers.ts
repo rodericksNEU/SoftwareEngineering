@@ -206,7 +206,7 @@ export function conversationAreaCreateHandler(_requestData: ConversationAreaCrea
   const coveyTownController = townsStore.getControllerForTown(_requestData.coveyTownID);
 
 
-  console.log(`controller defined? ${coveyTownController !== undefined}`);
+  // console.log(`controller defined? ${coveyTownController !== undefined}`);
   // Validate controller
   if (coveyTownController === undefined) {
     return {
@@ -218,7 +218,7 @@ export function conversationAreaCreateHandler(_requestData: ConversationAreaCrea
 
   // Validate session token 
   const token = coveyTownController.getSessionByToken(_requestData.sessionToken);
-  console.log(`token valid? ${token !== undefined}`);
+  // console.log(`token valid? ${token !== undefined}`);
   if (token === undefined) {
     return {
       isOK: false,
@@ -229,8 +229,8 @@ export function conversationAreaCreateHandler(_requestData: ConversationAreaCrea
 
   // Validate conversation area
   const conversationArea = coveyTownController.addConversationArea(_requestData.conversationArea);
-  console.log(`conversation area defined? ${conversationArea !== undefined}`);
-  if (conversationArea === undefined) {
+  // console.log(`conversation area defined? ${conversationArea}`);
+  if (!conversationArea) {
     return {
       isOK: false,
       response: {},
@@ -242,7 +242,6 @@ export function conversationAreaCreateHandler(_requestData: ConversationAreaCrea
     isOK: true,
     response: {},
     message: undefined,
-
   };
 }
 
