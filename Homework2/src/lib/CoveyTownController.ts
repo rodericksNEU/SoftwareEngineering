@@ -171,47 +171,27 @@ export default class CoveyTownController {
     // bottom of bounding box
     const newBottom = bb.y + bb.height / 2;
 
-    let i = this._conversationAreas.length;
     // Checks if there is an existing conversation area in bounds of new conversation area
-    while (i > 0) {
-      const convo = this._conversationAreas[i - 1];
-      // If label already exists for some conversation area in array
-      if (convo.label === _conversationArea.label) {
-        return false;
-      }
-      const cbb = convo.boundingBox;
-      const left = cbb.x - bb.width / 2;
-      const right = cbb.x + bb.width / 2;
-      const top = cbb.y - bb.height / 2;
-      const bottom = cbb.y + bb.height / 2;
+    
+    for (let i = 0; i < this._conversationAreas.length; i += 1) {
+      const convo = this._conversationAreas[i];
+      if (convo) {
+        if (convo.label === _conversationArea.label) {
+          return false;
+        }
 
-      // Top Left Corner
-      if (newLeft < left && newRight > left) {
-        if (newTop < top && newBottom > top) {
-          return false;
-        }
-      }
-      // Top Right Corner
-      if (newLeft > left && newLeft < right) {
-        if (newTop < top && newBottom > top)  {
-          return false;
-        }
-      }
-      // Bottom Left Corner
-      if (newLeft < left && newRight > left) {
-        if (newTop < bottom && newBottom > bottom)  {
-          return false;
-        }
-      }
+        const cbb = convo.boundingBox;
+        const left = cbb.x - bb.width / 2;
+        const right = cbb.x + bb.width / 2;
+        const top = cbb.y - bb.height / 2;
+        const bottom = cbb.y + bb.height / 2;
 
-      // Bottom Right Corner
-      if (newLeft > left && newLeft < right) {
-        if (newTop < bottom && newBottom > bottom)  {
+        if (newRight > left && newLeft < right && newBottom < top && newTop > bottom) {
           return false;
         }
       }
-      i -= 1;
     }
+
     this.conversationAreas.push(_conversationArea);
     // console.log(`length of conversation area array is ${this._conversationAreas.length}`);
 
@@ -219,12 +199,14 @@ export default class CoveyTownController {
     // Adds all players in new conversation area to occupancy list
     let j = this._players.length;
     while (j > 0) {
+
       const player = this._players[j - 1];
       const px = player.location.x;
       const py = player.location.y;
       if (px > newLeft && px < newRight && py > newTop && py < newBottom) {
         player.activeConversationArea = _conversationArea;
         _conversationArea.occupantsByID.push(player.id);
+
       }
       j -= 1;
     }
