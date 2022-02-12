@@ -117,9 +117,27 @@ export default class CoveyTownController {
    * @param session PlayerSession to destroy
    */
   destroySession(session: PlayerSession): void {
+   
+    // filter out players and sessions
     this._players = this._players.filter(p => p.id !== session.player.id);
     this._sessions = this._sessions.filter(s => s.sessionToken !== session.sessionToken);
+
+    // alert each listener that the player disconnected
     this._listeners.forEach(listener => listener.onPlayerDisconnected(session.player));
+
+    // alias the conversation
+    const conv = session.player.activeConversationArea;
+
+    // if we have said conversation and its not null or undefined
+    if (conv && conv !== undefined && conv !== null) {
+      // filter occupants by ID
+      conv.occupantsByID = conv.occupantsByID.filter(s => s !== session.player.id);
+
+      // destroy the conversation area / update it?
+      this._listeners.forEach(listener => listener.onConversationAreaDestroyed(conv));
+      this._listeners.forEach(listener => listener.onConversationAreaUpdated(conv));
+     
+    }
   }
 
   /**
@@ -133,8 +151,45 @@ export default class CoveyTownController {
    * @param location New location for this player
    */
   updatePlayerLocation(player: Player, location: UserLocation): void {
+    const oldPlayer = player;
+    const oldAreaLabel = player.activeConversationArea?.label;
     player.updateLocation(location);
-    this._listeners.forEach(listener => listener.onPlayerMoved(player));
+    const newPlayer = player;
+    if (oldAreaLabel !== location.conversationLabel) {
+      const newArea = location.conversationLabel;
+      
+      // Loop through all conversation areas
+      for (let i = 0; i < this._conversationAreas.length; i += 1) {
+        const ca = this._conversationAreas[i];
+        
+        // get conversation area with same id as new area
+        if (ca.label === oldAreaLabel) {
+          const occupants = ca.occupantsByID;
+          const newOccupants : string[] = [];
+          
+          // Remove occupant from old area
+          for (let o = 0; o < occupants.length; i += 1) {
+            if (occupants[o] !== oldPlayer.id) {
+              newOccupants.push(occupants[o]);
+
+            }
+          }
+          ca.occupantsByID = newOccupants;
+          oldPlayer.activeConversationArea = undefined;
+          const oldArea = oldPlayer.activeConversationArea;
+          if (oldArea) {
+            this._listeners.forEach(l => l.onConversationAreaUpdated(oldArea));
+          }
+        }
+        if (ca.label === newArea) {
+          // add player to new conversation area list
+          ca.occupantsByID.push(newPlayer.id);
+          newPlayer.activeConversationArea = ca;
+          this._listeners.forEach(l => l.onConversationAreaUpdated(ca));
+        }
+      }
+    }
+    this._listeners.forEach(listener => listener.onPlayerMoved(newPlayer));
   }
 
   /**
@@ -151,6 +206,7 @@ export default class CoveyTownController {
    * @returns true if the conversation is successfully created, or false if not
    */
   addConversationArea(_conversationArea: ServerConversationArea): boolean {
+
 
     if (
       _conversationArea.topic === '' ||
