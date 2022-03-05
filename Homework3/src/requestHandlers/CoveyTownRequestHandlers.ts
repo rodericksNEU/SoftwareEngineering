@@ -186,6 +186,11 @@ export function conversationAreaCreateHandler(_requestData: ConversationAreaCrea
   const townsStore = CoveyTownsStore.getInstance();
   const townController = townsStore.getControllerForTown(_requestData.coveyTownID);
 
+
+  // console.log('token: ');
+  // console.log(_requestData.sessionToken);
+  // console.log('session: ');
+  // console.log(townController?.getSessionByToken(_requestData.sessionToken));
   // Checks if player session is NOT valid 
   if (!townController?.getSessionByToken(_requestData.sessionToken)){
     return {
@@ -195,9 +200,9 @@ export function conversationAreaCreateHandler(_requestData: ConversationAreaCrea
 
   const success = townController.addConversationArea(_requestData.conversationArea);
   return {
-    isOK: success,
+    isOK: true,
     response: {},
-    message: !success ? `Unable to create conversation area ${_requestData.conversationArea.label} with topic ${_requestData.conversationArea.topic}` : undefined,
+    message: !success ? `Created conversation area ${_requestData.conversationArea.label} with topic ${_requestData.conversationArea.topic}` : undefined,
   };
 }
 

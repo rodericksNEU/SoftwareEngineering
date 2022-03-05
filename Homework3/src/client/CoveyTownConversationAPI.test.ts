@@ -11,7 +11,8 @@ import * as requestHandlers from '../requestHandlers/CoveyTownRequestHandlers';
 import { createConversationForTesting } from './TestUtils';
 import TownsServiceClient, { ServerConversationArea } from './TownsServiceClient';
 import CoveyTownListener from '../types/CoveyTownListener';
-import Player from '../types/Player';
+// import Player from '../types/Player';
+// import * as TestUtils from './TestUtils';
 
 type TestTownData = {
   friendlyName: string;
@@ -20,6 +21,7 @@ type TestTownData = {
   townUpdatePassword: string;
 };
 
+// CONVERSATION AREA API TESTS
 describe('Create Conversation Area API', () => {
   let server: http.Server;
   let apiClient: TownsServiceClient;
@@ -55,6 +57,7 @@ describe('Create Conversation Area API', () => {
   afterAll(async () => {
     await server.close();
   });
+  // SUCCESFUL CREATE CONVERSATION AREA
   it('Executes without error when creating a new conversation', async () => {
     const testingTown = await createTownForTesting(undefined, true);
     const testingSession = await apiClient.joinTown({
@@ -68,10 +71,14 @@ describe('Create Conversation Area API', () => {
     });
   });
 });
-describe('conversationAreaCreateHandler', () => {
 
+// REQUEST HANDLER ADD CONVERSATION AREA
+describe('conversationAreaCreateHandler', () => {
   const mockCoveyTownStore = mock<CoveyTownsStore>();
   const mockCoveyTownController = mock<CoveyTownController>();
+  // let server: http.Server;
+  // let apiClient: TownsServiceClient;
+
   beforeAll(() => {
     // Set up a spy for CoveyTownsStore that will always return our mockCoveyTownsStore as the singleton instance
     jest.spyOn(CoveyTownsStore, 'getInstance').mockReturnValue(mockCoveyTownStore);
@@ -87,47 +94,40 @@ describe('conversationAreaCreateHandler', () => {
     mockReset(mockCoveyTownStore);
     mockCoveyTownStore.getControllerForTown.mockReturnValue(mockCoveyTownController);
   });
+
+  // VALID SESSION TOKEN
   it('Checks for a valid session token before creating a conversation area', async ()=>{
-    const coveyTownID = nanoid();
+    const invalidTownID = nanoid();
     const conversationArea : ServerConversationArea = {
       boundingBox: { height: 1, width: 1, x:1, y:1 }, label: 'Conversation Area 1 Label', occupantsByID: [], topic: 'Conversation Area 1 Topic' };
-    // console.log(conversationArea); 
     const invalidSessionToken = nanoid();
     const mockListener = mock<CoveyTownListener>();
     mockCoveyTownController.addTownListener(mockListener);
-
 
     // Make sure to return 'undefined' regardless of what session token is passed
     mockCoveyTownController.getSessionByToken.mockReturnValueOnce(undefined);
 
     const failResult = requestHandlers.conversationAreaCreateHandler({
       conversationArea,
-      coveyTownID,
+      coveyTownID: invalidTownID,
       sessionToken: invalidSessionToken,
     });
 
     expect(failResult.isOK).toBe(false);
-    expect(mockCoveyTownController.getSessionByToken).toBeCalledWith(invalidSessionToken);
-    expect(mockCoveyTownController.addConversationArea).not.toHaveBeenCalled();
+    // expect(mockCoveyTownController.getSessionByToken).toBeCalledWith(invalidSessionToken);
 
-    const townName = 'testing town';
-    const testingTown = new CoveyTownController(townName, false);
-    testingTown.addTownListener(mockListener);
-
-    const player = new Player(nanoid());
-    const session = await testingTown.addPlayer(player);
     
-    const passResult = requestHandlers.conversationAreaCreateHandler({
-      conversationArea,
-      coveyTownID,
-      sessionToken: session.sessionToken,
-    });
-    
-    expect(testingTown.getSessionByToken(session.sessionToken)).toBe(session);
-    const areaCreated = testingTown.addConversationArea(conversationArea);
-    expect(areaCreated).toBe(true);
-    expect(testingTown.conversationAreas.length === 1);
-    expect(passResult.isOK).toBe(false);
+    // const validArea = await apiClient.createConversationArea();
 
+    // // Get a valid session token by joining the room
+    // const { coveySessionToken: validSessionToken } = await apiClient.joinTown({
+    //   coveyTownID: validArea.coveyTownID,
+    //   userName: nanoid(),
+    // });
+
+
+    // const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, validSessionToken, nanoid());
+    // await socketConnected; // Make sure that the socket actually connects to the server
+    // await socketDisconnected;
   });
 });
